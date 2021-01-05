@@ -6,9 +6,9 @@ from collections import deque, Counter, defaultdict
 from trees import BinarySearchTree, inOrder, preOrder
 import string
 from itertools import combinations, permutations, combinations_with_replacement
-from functools import reduce, lru_cache
+from functools import reduce, lru_cache, cache
 import sys
-
+from timeit import timeit
 class TreeNode: 
   def __init__(self,key): 
     self.left = None
@@ -112,6 +112,127 @@ class Solution:
         for i in range(1,num+1):
             dp.append(dp[i >> 1] + i&1)
         return dp
+    # https://leetcode.com/problems/string-compression/
+    def compress(self, chars: List[str]) -> int:
+        def countS(countL, cnt):
+            while cnt:
+                countL.insert(1,str(cnt%10))
+                cnt = cnt//10
+            return countL
+
+        if len(chars) < 2: return len(chars)
+        prev, count, nextI = chars[0], 1, 0
+        for i in range(1,len(chars)):
+            if chars[i] == prev:
+                count += 1
+            elif count == 1:
+                chars[nextI] = prev
+                nextI += 1
+                prev, count = chars[i], 1
+            else:
+                chLst = countS([prev],count)
+                chars[nextI:nextI+len(chLst)] = chLst
+                nextI += len(chLst)
+                prev, count = chars[i], 1
+        chLst = [prev] if count == 1 else countS([prev],count)
+        chars[nextI:nextI+len(chLst)] = chLst
+        nextI += len(chLst)
+        chars = chars[:nextI]
+        return nextI
+    # https://leetcode.com/problems/string-compression/discuss/92568/Python-Two-Pointers-O(n)-time-O(1)-space
+    def compress(self, chars):
+        left = i = 0
+        while i < len(chars):
+            char, length = chars[i], 1
+            while (i + 1) < len(chars) and char == chars[i + 1]:
+                length, i = length + 1, i + 1
+            chars[left] = char
+            if length > 1:
+                len_str = str(length)
+                chars[left + 1:left + 1 + len(len_str)] = len_str
+                left += len(len_str)
+            left, i = left + 1, i + 1
+        return left
+    # 
+    def compress(self, chars):
+        st = i = 0 # st: start a new block
+        while i < len(chars):
+            while i < len(chars) and chars[i] == chars[st]: i += 1  
+            if i - st == 1: st = i # next block st at i
+            else:
+                chars[st + 1 : i] = str(i - st) # copy the str of char count, shrinking the char block to len(str(i-st))
+                st = st + 1 + len(str(i - st)) # st start next block
+                i = st
+        return len(chars)
+    # https://leetcode.com/problems/rotate-image/discuss/18872/A-common-method-to-rotate-the-image
+    # clockwise rotate: first reverse up to down, then swap the symmetry
+    def rotate(self, matrix: List[List[int]]) -> None:
+        for i in range(len(matrix)//2):
+            j = len(matrix)-i-1
+            matrix[i][:], matrix[j][:] = matrix[j], matrix[i][:]
+        for r in matrix: print(r)
+        for i in range(len(matrix)):
+            for j in range(i,len(matrix[0])):
+                if i != j:
+                    matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+        return matrix
+    # anticlockwise rotate: first reverse left to right, then swap the symmetry
+    def rotateAC(self, matrix: List[List[int]]) -> None:
+        for i,r in enumerate(matrix):
+            matrix[i] = r[::-1]
+        for r in matrix: print(r)
+        for i in range(len(matrix)):
+            for j in range(i,len(matrix[0])):
+                if i != j:
+                    matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+        return matrix
+    # https://leetcode.com/problems/set-matrix-zeroes/submissions/
+    def setZeroes(self, matrix: List[List[int]]) -> None:
+        zy = []
+        zx = []
+        def merge(l1,l2): # in-place merge l2 into l1
+            i = j = 0
+            while i < len(l1) and j < len(l2):
+                if l1[i] == l2[j]: i += 1; j += 1
+                elif l1[i] > l2[j]: l1[i], l2[j] = l2[j], l1[i]; i += 1
+                else: i += 1
+            if j < len(l2): l1.extend(l2[j:])
+        for i, r in enumerate(matrix):
+            _zx = [j for j, x in enumerate(r) if x == 0]
+            if _zx: zy.append(i)
+            if len(zx) == 0: zx = _zx
+            elif _zx:
+                if zx[-1] < _zx[0]: zx.extend(_zx)
+                elif zx[-1] > _zx[0]: merge(zx, _zx)
+                else:
+                    j = 0
+                    while j < len(_zx):
+                        if zx[-1] != _zx[j]:
+                            zx.append(_zx[j])
+                        j += 1
+        for i in range(len(matrix)):
+            for j in range(len(matrix[i])):
+                if i in zy or j in zx:
+                    matrix[i][j] = 0
+    # Store information at the first element of each columns and rows. If a column contains a 0, it's first element will be 0. Same for rows.
+    # However, both first column and first row use matrix[0][0] which is problematic so she creates another variable for first column, col0.
+    # Finally, start setting zeros from the bottom right corner.
+    # https://leetcode.com/problems/set-matrix-zeroes/discuss/26014/Any-shorter-O(1)-space-solution
+    def setZeroes(self, matrix: List[List[int]]) -> None:
+        col0, rows, cols = 1, len(matrix), len(matrix[0])
+        for i in range(rows):
+            if matrix[i][0] == 0: col0 = 0 # global col0
+            for j in range(1, cols):
+                if matrix[i][j] == 0: # row i, col j = 0
+                    matrix[i][0] = matrix[0][j] = 0 # mark first of row/col to 0
+        for i in range(rows-1, -1, -1):
+            for j in range(1, cols):
+                if matrix[i][0] == 0 or matrix[0][j] == 0: # row i, col j == 0, all elements in same row/col = 0
+                    matrix[i][j] = 0
+            if col0 == 0:
+                matrix[i][0] = 0
+
+        print(matrix)
     # https://leetcode.com/problems/path-sum/submissions/
     def hasPathSum0(self, root, sum):
         if not root:
@@ -496,28 +617,25 @@ class Solution:
         while stack:
             top = stack.pop()
             (node, parent), subs = top[:2], top[2:]
-            if node in (None, p, q):
-                parent += node,
-            elif not subs:
-                stack += top, [node.right, top], [node.left, top]
-            else:
-                parent += node if all(subs) else max(subs),
+            if node in (None, p, q): parent += node, # found node or reached leaf
+            elif not subs: stack += top, [node.right, top], [node.left, top]
+            else: parent += node if all(subs) else max(subs),
         return answer[0]
     # find the paths to p and q and then find the last node where the paths match.
     def lowestCommonAncestor(self, root, p, q): # better time than above
         def path(root, goal):
             path, stack = [], [root]
-            while True:
-                node = stack.pop()
+            while stack:
+                node = stack.pop() # pop stack to build path starting at root, left, repeat till leaf, if goal not found, then backtrack path to right branch
                 if node:
                     if node not in path[-1:]:
-                        path += node,
-                        if node == goal:
-                            return path
-                        stack += node, node.right, node.left
+                        path += node, # build path starting at root, left, repeating till leaf
+                        if node == goal: return path
+                        stack += node, node.right, node.left # grow stack till leaf
                     else:
-                        path.pop()
-        return next(a for a, b in list(zip(path(root, p), path(root, q)))[::-1] if a == b)
+                        path.pop() # path has no goal, pop path till stack & path diverge, then branch right, repeat till leaf
+        pathp,pathq = path(root, p), path(root, q)
+        return next(a for a, b in list(zip(pathp,pathq))[::-1] if a == b) if pathp and pathq else None
     def reorganizeString(self, S: str) -> str:
         lenABC = len(string.ascii_lowercase)
         counters = [0]*lenABC
@@ -1315,7 +1433,49 @@ class Solution:
                 if row[j] == 1: dp[j] = 0
                 elif j: dp[j] += dp[j - 1] # recurrence: new dp[j] = old dp[j] + dp[j-1]
         return dp[-1]
-
+    # 
+    def minPathSum(self, grid: List[List[int]]) -> int:
+        width = len(grid[0])
+        hei = len(grid)
+        for i in range(1,width):
+            grid[0][i] += grid[0][i-1]
+        for j in range(1,hei):
+            grid[j][0] += grid[j-1][0]
+        for i in range(1,hei):
+            for j in range(1,width):
+                grid[i][j] = min(grid[i][j]+grid[i-1][j],grid[i][j]+grid[i][j-1])
+        return grid[-1][-1]
+    # https://leetcode.com/problems/cherry-pickup/discuss/329945/Very-easy-to-follow-%3A-step-by-step-recursive-backtracking-with-memoization-N4.
+    def cherryPickup(self, grid: List[List[int]]) -> int:
+        m, n = len(grid), len(grid[0])
+        mem = [ [ [-2**31 for i in range(m)] for j in range(n) ] for k in range(m)]
+        def dfs(grid, mem, m, n, x1, y1, x2, y2):
+            if x1>=m or x2>=m or y1 >= n or y2>=n or grid[x1][y1] == -1 or grid[x2][y2] == -1: return -2**31
+            if mem[x1][y1][x2] != -2**31: return mem[x1][y1][x2]
+            cherry = 0
+            if grid[x1][y1] == 1: cherry+=1
+            if x1!=x2 and grid[x2][y2] == 1: cherry+=1
+            if x1==m-1 and y1==n-1: return cherry
+            cherry += max(
+                dfs(grid, mem, m, n, x1+1, y1, x2+1, y2),
+                dfs(grid, mem, m, n, x1+1, y1, x2, y2+1),
+                dfs(grid, mem, m, n, x1, y1+1, x2+1, y2),
+                dfs(grid, mem, m, n, x1, y1+1, x2, y2+1),
+                )
+            mem[x1][y1][x2] = cherry
+            return cherry
+        return max(0, dfs(grid, mem, m, n, 0, 0, 0, 0))
+    def cherryPickup(self, grid: List[List[int]]) -> int:
+        n = len(grid)
+        @lru_cache(None)
+        def dfs(x1, y1, x2, y2):
+            if any(a >= n for a in (x1, y1, x2, y2)) or grid[x1][y1] == -1 or grid[x2][y2] == -1:
+                return float('-inf')
+            if (n-1, n-1) in ((x1, y1),(x2, y2)): return grid[-1][-1]            
+            if (x1, y1) == (x2, y2): cherries = grid[x1][y1]
+            else: cherries = grid[x1][y1] + grid[x2][y2]
+            return cherries + max(dfs(x1 + 1, y1, x2 + 1, y2), dfs(x1 + 1, y1, x2, y2 + 1), dfs(x1, y1 + 1, x2 + 1, y2), dfs(x1, y1 + 1, x2, y2 + 1))
+        return max(0, dfs(0, 0, 0, 0))
     def climbStairs0(self, n: int) -> int:
         def ways(i):
             if i < 3: return i
@@ -1611,6 +1771,8 @@ class Solution:
                 # maximum profit from up to i-1 transactions, using at most first j-1 prices, and buying the stock at price[j]
                 tmpMax = max(tmpMax, t[i-1][j-1] - prices[j])
         return t[k][len(prices)-1]
+    # https://leetcode.com/problems/coin-change/discuss/77361/Fast-Python-BFS-Solution
+    # compute the fewest number of coins that you need to make up that amount
     def coinChange(self, coins: List[int], amount: int) -> int:
         if amount < 1: return 0
         n = len(coins)
@@ -1634,22 +1796,21 @@ class Solution:
             for amt in range(c, amount+1):
                 dp[amt] = min(dp[amt], dp[amt-c]+1)
         return -1 if dp[-1] > amount else dp[-1]
-    def coinChange(self, coins: List[int], amount: int) -> int:
+    def coinChangeBFS(self, coins: List[int], amount: int) -> int:
         if amount == 0: return 0
         coins.sort()
         big = coins[-1]
-        if not amount%big: return amount/big
-        if amount%big in coins: return amount/big+1
+        if not amount%big: return amount//big
+        if amount%big in coins: return amount//big+1
         queue = [[0, 0]]
         visited = {0}
-        step = 0
-        for node, step in queue:
+        for curAmt, cCount in queue: # cCount: the number of coins adding to current amount
             for coin in coins:
-                if node + coin in visited: continue
-                if node + coin == amount: return step + 1
-                elif node + coin < amount:
-                    queue.append([node + coin, step + 1])
-                    visited.add(node + coin)
+                if curAmt + coin in visited: continue
+                if curAmt + coin == amount: return cCount + 1
+                elif curAmt + coin < amount:
+                    queue.append([curAmt + coin, cCount + 1])
+                    visited.add(curAmt + coin)
         return -1
     def coinChange(self, coins: List[int], amount: int) -> int: # best time, concise, 
         if amount == 0: return 0
@@ -1666,6 +1827,53 @@ class Solution:
             seen |= level
             number += 1 # number the current level
         return -1
+    # https://leetcode.com/problems/coin-change-2/discuss/141076/Unbounded-Knapsack
+    # Find number of combinations that make up amount
+    # 1. not using the ith coin, only using the first i-1 coins to make up amount j, then we have dp[i-1][j] ways.
+    # 2. using the ith coin, since we can use unlimited same coin, we need to know how many ways to make up amount
+    #  j - coins[i-1] by using first i coins(including ith), which is dp[i][j-coins[i-1]], excluding coin i value: coins[i-1]
+    # Initialization: dp[i][0] = 1
+    def change(self, amount: int, coins: List[int]) -> int:
+        dp = [1] + [0]*amount # dp[i][j] : the number of combinations to make up amount j by using the first i types of coins
+        for coinI in range(1,len(coins)+1):
+            for curAmt in range(1,amount+1):
+                dp[coinI][curAmt] = dp[coinI-1][curAmt] + dp[coinI][curAmt-coins[coinI-1]] if curAmt >= coins[coinI-1] else 0
+        return dp[len(coins)][amount]
+    def change(self, amount: int, coins: List[int]) -> int:
+        dp = [1] + [0]*amount # dp[i][j] : the number of combinations to make up amount j by using the first i types of coins
+        for coin in coins:
+            for amt in range(coin,amount+1):
+                dp[amt] += dp[amt-coin]
+        return dp[amount]
+    # unbounded (unlimited coins for each denomination) vs bounded (only 1 of each coin denomination
+    # increasing i then the previous partial result dp[i - coin] is the result that has considered coin already
+    # nonrepeat: decreasing i then the previous partial result dp[i - coin] is the result that has not considered coin yet
+    # return number of ways to make sum s using repeated coins
+    # number of ways to make sum s using non-repeated coins
+    def coinnonrep(coins, amount):
+        dp = [1] + [0]*amount # dp[i][j] : the number of combinations to make up amount j by using the first i types of coins
+        for coin in coins:
+            for curAmt in range(amount,coin-1,-1):
+                dp[curAmt] += dp[curAmt - coin]              
+        return dp[amount]  
+    def change(self, amount: int, coins: List[int]) -> int:
+        # Time Complexity: O(amount * len(coins)), Space Complexity: O(amount)
+        # bottom up dp solution space optimised solution
+        # when amount is 0 then the answer is 1 as we have found a way to reach the current sum with some coins
+        dp = [1] + [0]*amount
+        # recurrence is dp[amt][idx] = dp[amt-coins[idx]][idx] + dp[amt][idx-1] with and without coins[idx]
+        # iterate in increasing order of idx and amount
+        for idx in range(len(coins)): # coins[idx]
+            # initialise the current table
+            curr_dp = [1] + [0]*amount
+            for amt in range(1, amount+1):
+                if amt - coins[idx] >= 0:
+                    curr_dp[amt] += curr_dp[amt-coins[idx]]
+                if idx >= 1:
+                    curr_dp[amt] += dp[amt]
+            # update the previous table with current table
+            dp = curr_dp
+        return dp[-1]
     def countBits(self, num: int) -> List[int]:
         dp = [0,1] + [0]*(num-1) # dp[i] number of 1's in binary i
         offset = 1
@@ -2561,6 +2769,52 @@ class Solution:
             else:
                 cur = intervals[i]
         return cnt
+    # https://leetcode.com/discuss/interview-question/368573/google-onsite-restricted-knapsack-problem
+    # greedy (2x lightest ONES or 1x lightest TWOS) is at worst 1 less than optimal. So we just need one swap at the end.
+    def restricted_knapsack(self, capacity, weights, values):
+        ones = sorted(((w, i) for i, w in enumerate(weights) if values[i] == 1), reverse=True) # Sort by weight
+        twos = sorted(((w, i) for i, w in enumerate(weights) if values[i] == 2), reverse=True)
+        indexes = []
+
+        def take(a):
+            nonlocal capacity
+            w, i = a.pop()
+            capacity -= w
+            indexes.append(i)
+
+        last_one = None  # While ONES.length >= 2 and TWOS.length >= 1: add to knapsack (ONES[0] + ONES[1]) or TWOS[0], whichever is lighter, 
+        while len(ones) >= 2 and twos: # break if neither fits
+            ones_weight = ones[-1][0] + ones[-2][0]
+            twos_weight = twos[-1][0]
+            if capacity < min(ones_weight, twos_weight):
+                break
+            elif twos_weight <= ones_weight:
+                take(twos)
+            else:
+                take(ones)
+                take(ones)
+                if last_one is not None:
+                    indexes.append(last_one)
+                last_one = indexes.pop()
+        for a in twos, ones: # Add lightest remaining TWOS that fit, then add lightest remaining ONES that fit
+            while a and capacity >= a[-1][0]:
+                take(a)
+
+        if last_one is not None: # At this point, our solution is at worst one item away from optimal
+            if twos and capacity + weights[last_one] - twos[-1][0] >= 0:
+                take(twos)
+            else:
+                indexes.append(last_one)
+        return indexes
+    # https://levelup.gitconnected.com/understanding-dynamic-programming-in-theory-and-practice-7835610ca485
+    @cache
+    def computeMaxProfit(self, prices, size):
+        if size <= 0: return 0
+        maxProfit = 0
+        for i in range(size):
+            maxProf = prices[i] + self.computeMaxProfit(prices, size-i-1)
+            maxProfit = max(maxProfit, maxProf)
+        return maxProfit
 class Node(object):
     def __init__(self):
         self.outgoing_nodes = set()
@@ -2712,6 +2966,13 @@ def check(expected, output):
 
 if __name__ == "__main__":
   sol = Solution()
+#   print(sol.restricted_knapsack(7, [2, 2, 5, 6], [1, 1, 2, 1]))
+#   @timeit
+#   def tw():
+#     sol.computeMaxProfit((1,5,8,9,10,17,17,20,24,30), 10)
+#   print(tw())
+  print(sol.cherryPickup([[1,1,1,0,0],[0,0,1,0,1],[1,0,1,0,0],[0,0,1,0,0],[0,0,1,1,1]]))
+#   print(sol.minPathSum([[1,2,3],[4,5,6]]))
   expected = [[[1,1,6],[1,2,5],[1,7],[2,6]],[[1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 2], [1, 1, 1, 1, 1, 1, 3], [1, 1, 1, 1, 1, 2, 2], [1, 1, 1, 1, 2, 3], [1, 1, 1, 1, 5], [1, 1, 1, 2, 2, 2], [1, 1, 1, 3, 3], [1, 1, 1, 6], [1, 1, 2, 2, 3], [1, 1, 2, 5], [1, 1, 7], [1, 2, 2, 2, 2], [1, 2, 3, 3], [1, 2, 6], [1, 3, 5], [2, 2, 2, 3], [2, 2, 5], [2, 7], [3, 3, 3], [3, 6]],
 [[1, 1, 1, 1], [1, 1, 2], [2, 2]], [[1, 1]], [[1]], [], [[2, 2, 2, 2], [2, 3, 3], [3, 5]], [[2, 2, 3], [7]]]
   tdata = [([10,1,2,7,6,5],8),([2,7,6,3,5,1],9),([1,2],4),([1],2),([1],1),([2],1),([2,3,5],8),([2,3,6,7],7)]
@@ -2770,7 +3031,7 @@ if __name__ == "__main__":
     #   res = sol.lengthOfLIS([4,10,4,3,8,9])
     #   res = sol.lengthOfLIS([10,9,2,5,3,7,101,18])
     #   res = sol.lengthOfLIS([7,7,7,7,7,7,7])
-    # res = sol.coinChange(*([186,419,83,408],6249))
+    res = sol.coinChangeBFS(*([186,419,83,408],6249))
     # print([[0,4],[1,3],[1,4],[2,2],[3,0],[3,1],[4,0]])
     # expected = "qoobecgosekwvcyyfzuaiweqjnwfssjmbrcfkppdclmqpayziyzwhktkxlmhjgjjrkdvfseatybsltvlsklnxxywzcgvvqxrnkkccfvbwpjfnpqrkfqgoajiksmtmogouhivogjuriyfwushmnyqcrdkkfkrhfieaujweckpjjtzlitjhghukqllqttszuzrnwyafumimkiljsatlklrwwdbxcaunkl"
     # expected = "tpikizxvyrzcpvfrehjdmagwwpztfpmmqgoxdwmwonixjeomsmuhfbhckkedqilidmlqtplruwdsgpflydzwrlrqjlprpqouvrdzzicfvevaiamhjutpaocknpuxotcvwhbcfzthbbjwdbrhfivmqyyevfzkzamdkmsawxbyjngttwfoldnazzqjabywvxjpuyvtylwjbpxwbqhybtfiwpolgeeelbtpafwudfwouudrbbfbbssaqcbtfarqvwicijorgfbzjykfdbdxatpumbnbrnvudxhwevomvipapbtuhbovxfwfhjlcjglydissiawiqkqgbunuhdpevqccrrqycsywratpnuuccdrznqzfwceotztuzzdyhtosrqudtkhscjtfvskilocrgwavaflxfgbevpfuhqttmetognhgkswflvbwgcraorzmamktsytqxtnegtywvslyvjxipfuheuuduxkunppkmlbnjmtcuaqquxofmjlrsmlzuznzgrqdovzxbrvkaxlfpyuxsvwuohjewkbxntbqbxlxkvdxthvihhvmyuogxhqtxddjvcufrddstecbtmmeunkurguegiygqjsdclrsypeobwdutywohybvwbunbdnizddvtuxhoasubnampccqpukhnphzlczrhzqfqgcgqaavevacjqfdjywiocsvgtzugpmnbodgwpyydkifmbfnvhogyzcidkfzfsppjrmuxqverlwqvetgfifhuwvzizthgkfyigszxgbmsixsuyizhjfbrvbshebdrlunvyniezhrwgywjurjyrqraeoucirgtbukwysfdcdrwxjrqintjdheebylmottpfrjoadhcqxrnlmlaxoqkkylamvplmyydvcehmpcvrysfreytulqfhsrjvvpgsvnwfoisbxvtigvoxezkxxhnecenqopsqkklfalglhleescnnldxnrzrmxsqgmamhnsbmdzgoppcmgyvsrpxcfeihpszxnksznhxlk"
@@ -2781,12 +3042,12 @@ if __name__ == "__main__":
     # print(res)
     # res = sol.countBits(5)
     # res = sol.combinationSum4([1, 2, 3],4)
-    res = sol.combinationSum2dp([1,2,3,6,7],7)
+    # res = sol.combinationSum2dp([1,2,3,6,7],7)
     # res = sol.canPartition([1,2,5])
     # res = sol.canPartition([100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,99,97])
-    print(res)
+    # print(res)
         # check(set((tuple(sorted(l)) for l in expected[i])), set((tuple(sorted(l)) for l in res)))
-    break
+    # break
   # td = [["5","3",".",".","7",".",".",".","."],["6",".",".","1","9","5",".",".","."],[".","9","8",".",".",".",".","6","."],["8",".",".",".","6",".",".",".","3"],["4",".",".","8",".","3",".",".","1"],["7",".",".",".","2",".",".",".","6"],[".","6",".",".",".",".","2","8","."],[".",".",".","4","1","9",".",".","5"],[".",".",".",".","8",".",".","7","9"]]
   # sol.solveSudoku(td)
   # print(td)
@@ -2796,9 +3057,21 @@ if __name__ == "__main__":
   #         cmd[0](cmd[1])
   #     else:
   #         print(cmd[0]())
-  # a = "3,5,1,6,2,0,8,#,#,7,4"
-  # deser = sol.deserialize(a)
-  # print(sol.lowestCommonAncestor(deser, deser.left, deser.right).val)
+    # a = "3,5,1,6,2,0,8,#,#,7,4"
+    # deser = sol.deserialize(a)
+    # node9 = TreeNode(9)
+    # # print(sol.lowestCommonAncestor(deser, node9, deser.right).val)
+    # print(sol.lowestCommonAncestor(deser, deser.left, deser.right).val)
+    # print(sol.compress(["a","a","a","a","a","a","a","a","a","a","a","a","a","a","a","a","a","a","a","a","0", "0", "b","b","c","c","c"]))
+    # print(sol.compress(["a","a","b","b","c","c","c"]))
+    tdata = [[1,2,3],[4,5,6],[7,8,9]]
+    tdata = [[1,2,3,4],[5,0,7,8],[0,10,11,12],[13,14,15,0]]
+    tdata = [[-4,-2147483648,6,-7,0],[-8,6,-8,-6,0],[2147483647,2,-9,-6,-10]]
+    # for r in tdata: print(r)
+    # res = sol.rotate(tdata)
+    res = sol.setZeroes(tdata)
+    for r in tdata: print(r)
+    break
   # a = [3,2,1,6,0,5]
   # bst = BinarySearchTree(a)
   # maxRoot = sol.constructMaximumBinaryTree(a)

@@ -5,12 +5,9 @@ class Solution:
         edMatrix = [[None] * (w) for _ in range(h)]
         for i in range(h):
             for j in range(w):
-                if i == 0:
-                    edMatrix[i][j] = j
-                elif j == 0:
-                    edMatrix[i][j] = i
-                elif s1[i-1] == s2[j-1]:
-                    edMatrix[i][j] = edMatrix[i-1][j-1]
+                if i == 0: edMatrix[i][j] = j
+                elif j == 0: edMatrix[i][j] = i
+                elif s1[i-1] == s2[j-1]: edMatrix[i][j] = edMatrix[i-1][j-1]
                 else:
                     edMatrix[i][j] = min(1+edMatrix[i][j-1], 1+edMatrix[i-1][j], 1+edMatrix[i-1][j-1]) # 2 if have to delete, then insert; 1 if can replace
         return edMatrix[len(s1)][len(s2)]
@@ -25,7 +22,7 @@ class Solution:
                     curRow[j] = prevRow[j-1]
                 else:
                     curRow[j] = min(1+curRow[j-1], 1+prevRow[j], 1+prevRow[j-1])
-            prevRow = curRow   
+            prevRow = curRow
         return prevRow[-1] == 1
     def minDistance(self, word1, word2):
         h, w = len(word1)+1, len(word2)+1
