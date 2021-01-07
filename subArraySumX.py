@@ -19,6 +19,10 @@ def NumSubArrSumX(a, k): #N
   numSubArrSumX = 0
   for i in range(len(a)):
     prefixSum += a[i]
+    # if prefixSum == k: handled in 24
+    #   numSubArrSumX += preSumCnts[0] # Add number of subarrays previously having a sum equal to 0
+    # if a[i] == k: handled in 24
+    #   numSubArrSumX += 1 
     if prefixSum-k in preSumCnts:
       numSubArrSumX += preSumCnts[prefixSum-k] # Add number of subarrays previously found having sum equal to currsum-sum
     preSumCnts[prefixSum] += 1 # Count number of subarrays having sum equal to prefixSum[i]
@@ -62,7 +66,7 @@ def findSubarraySum(arr, n, Sum):
 if __name__ == "__main__":
 
   for a,k in [([-1,-1,1],1),([1],0),([10, 2, -2, -20, 10] ,-10),([0, 1, 3, 4, 8, 23], 8),([1, 0, 3, 1, 4, 23], 8),([1, 3, 1, 4, 23], 7),([9, 4, 20, 3, 10, 5],33)]:
-    print(Solution().subarraySum(a, k), hasSubArrSumX(a, k), NumSubArrSumX(a, k),findSubarraySum(a, len(a), k)) 
+    print(hasSubArrSumX(a, k), NumSubArrSumX(a, k),findSubarraySum(a, len(a), k)) 
 	
 
 # [1, 3, 1, 4, 23], 8 : True (because 3 + 1 + 4 = 8)  1, 4, 5, 9, 8, 32

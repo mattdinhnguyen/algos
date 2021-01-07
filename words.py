@@ -64,7 +64,6 @@ class WordDictionary:
         while len(node[-1]) == 0:
             del nodes[-1]
             nodes.pop()
-            
 # https://leetcode.com/problems/word-search-ii/discuss/59804/27-lines-uses-complex-numbers
 
 class WordSearch(WordDictionary):

@@ -5,6 +5,7 @@ from math import factorial
 from heapq import heappush, heappop, merge
 import random
 
+<<<<<<< HEAD
 def singleNumber(A):
     count = [2]*(len(A)//2+1)
     for val in A:
@@ -13,6 +14,8 @@ def singleNumber(A):
         if c:
             return val
 print(singleNumber([1,1,2,2,3,4,4]))
+=======
+>>>>>>> c3286385401cd4d18b10ab49d997c344606626b2
 def count_abc0(n, nb, nc):
     if n == 1: # 1,0,0    1,1,0   1,1,1      1,1,2
         return 1 + (1 if nb else 0) + (1 if nc else 0)

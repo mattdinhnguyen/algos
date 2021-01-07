@@ -14,8 +14,7 @@ from bisect import insort, bisect_left, bisect
 import sys
 # Return the maximum sum subarray mod m.
 @timeit
-def maximumSum(arr, m):
-
+def maximumSum0(arr, m):
     prefix = 0
     maxim = 0
     S = SortedCollection()
