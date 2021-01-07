@@ -1832,6 +1832,17 @@ class Solution:
             # number of LIS of len i, ends with x dp[0][all values < 10**6]
             dp[i][x] += sum(dp[i-1][j] for j in dp[i-1] if j < x) # for all LIS of len i-1, end values j < x
         return sum(dp[max(0, len(tails)-1)].values())
+    # https://leetcode.com/problems/russian-doll-envelopes/discuss/82763/Java-NLogN-Solution-with-Explanation
+    def maxEnvelopes(self, envelopes):
+        if not envelopes: return 0
+        envelopes.sort(key=lambda x: (x[0], -x[1])) # Sort: Ascend on width, descend on height if width are same.
+        max_idx = 0
+        heights = [envelopes[0][1]] + [0] * (len(envelopes) - 1)
+        for e in envelopes: # Since width is increasing, we only need to consider height.
+            idx = bisect_left(heights, e[1], hi=max_idx + 1) # Find LIS based on height
+            heights[idx] = e[1] # heights has the slow increasing values overriding high values 
+            max_idx = max(max_idx, idx)
+        return max_idx + 1
     # https://leetcode.com/problems/best-time-to-buy-and-sell-stock/
     def maxProfit(self, prices: List[int]) -> int: # max profit, only 1 transaction
         curMin = prices[0] if prices else 0
@@ -3294,7 +3305,8 @@ if __name__ == "__main__":
     #   res = sol.lengthOfLIS([10,9,2,5,3,7,101,18])
     #   res = sol.lengthOfLIS([7,7,7,7,7,7,7])
     # res = sol.coinChange(*([1,2,5],11))
-    res = sol.coinChangeDP(*([1, 2, 3], 5))
+    res = sol.maxEnvelopes([[2,100],[3,200],[4,300],[5,500],[5,400],[5,250],[6,370],[6,360],[7,380]])
+    # res = sol.coinChangeDP(*([1, 2, 3], 5))
     # res = sol.coinChange(*([186,419,83,408],6249))
     res = sol.coinChangeBFS(*([186,419,83,408],6249))
     # print([[0,4],[1,3],[1,4],[2,2],[3,0],[3,1],[4,0]])
