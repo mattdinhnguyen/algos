@@ -51,6 +51,16 @@ def visible_nodes(root):
   
   return visibleCount
 class Solution:
+    # reverse decimal
+    def reverse(self, x: int) -> int:
+        # if (2**31 -1) < x < (-2**31): return 0
+        n = 0
+        sign = -1 if x < 0 else 1
+        x = x*sign
+        while x:
+            n = n*10 + x%10
+            x //= 10
+        return n*sign if (-2**31) <= n*sign <= (2**31 -1) else 0
     # https://leetcode.com/problems/add-binary/
     def addBinary(self, a: str, b: str) -> str:
         ahi = len(a)-1
@@ -211,6 +221,89 @@ class Solution:
                 if i != j:
                     matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
         return matrix
+    # https://leetcode.com/problems/spiral-matrix/discuss/20599/Super-Simple-and-Easy-to-Understand-Solution
+    def spiralOrder(self, matrix):
+        res = []
+        if matrix == None or len(matrix) == 0: return res
+        n, m = len(matrix), len(matrix[0]) # n rows, m cols
+        nm = n * m
+        up,  down = 0, n - 1
+        left, right = 0, m - 1
+        while len(res) < nm:
+            for j in range(left,right+1): # go left to right on row up 0..
+                if len(res) < nm: res.append(matrix[up][j])
+            for i in range(up + 1, down): # go up to down on col right
+                if len(res) < nm: res.append(matrix[i][right])
+            for j in range(right,left-1,-1): # go right to left on row down
+                if len(res) < nm: res.append(matrix[down][j])
+            for i in range(down-1,up,-1): # go down to up on col left
+                if len(res) < nm: res.append(matrix[i][left])
+            left += 1; right -= 1; up +=1; down -=1 
+        return res
+    # https://leetcode.com/problems/spiral-matrix/discuss/20571/1-liner-in-Python-%2B-Ruby
+    # Take the first row plus the spiral order of the rotated remaining matrix.
+    #     |1 2 3|      |6 9|      |8 7|      |4|  =>  |5|  =>  ||
+    #     |4 5 6|  =>  |5 8|  =>  |5 4|  =>  |5|
+    #     |7 8 9|      |4 7|
+    def spiralOrder(self, matrix):
+        return matrix and [*matrix.pop(0)] + self.spiralOrder([*zip(*matrix)][::-1])
+    # https://leetcode.com/problems/spiral-matrix-ii/discuss/963128/Python-rotate-when-need-explained
+    # Rotate 90 degrees clockwise on 1) reaching border, or 2) a filled cell
+    def generateMatrix(self, n: int) -> List[List[int]]:
+        x = y = dx = 0; dy = 1
+        matrix = [[0] * n for _ in range(n)]
+        for i in range(n*n):
+            matrix[x][y] = i+1
+            if not 0 <= x+dx < n or not 0 <= y+dy < n or matrix[x+dx][y+dy] != 0:
+                dx, dy = dy, -dx
+            x += dx; y += dy
+        return matrix
+    # https://www.youtube.com/watch?v=vAIp15jqQbU&t=442s
+    def generateMatrix(self, n: int) -> List[List[int]]: # reverse of spiralORder
+        if n == 1: return [[1]]
+        matrix = [[None]*n for _ in range(n)]
+        n2p1 = n * n +1
+        up,  down = 0, n - 1
+        left, right = 0, n - 1
+        val = 1
+        while val < n2p1:
+            for j in range(left,right+1): # go left to right on row up 0..
+                if val < n2p1: matrix[up][j] = val; val += 1
+            for i in range(up + 1, down): # go up to down on col right
+                if val < n2p1: matrix[i][right] = val; val += 1
+            for j in range(right,left-1,-1): # go right to left on row down
+                if val < n2p1: matrix[down][j] = val; val +=1
+            for i in range(down-1,up,-1): # go down to up on col left
+                if val < n2p1: matrix[i][left] = val; val += 1
+            left += 1; right -= 1; up +=1; down -=1 
+        return matrix
+    # https://leetcode.com/problems/spiral-matrix-ii/discuss/22282/4-9-lines-Python-solutions
+    # Start with the empty matrix, add the numbers in reverse order until we added the number 1.
+    # Always rotate the matrix clockwise and add a top row:
+    # ||  =>  |9|  =>  |8|      |6 7|      |4 5|      |1 2 3|
+    #                  |9|  =>  |9 8|  =>  |9 6|  =>  |8 9 4|
+    #                                      |8 7|      |7 6 5|
+    def generateMatrix(self, n):
+        A, lo = [], n*n+1
+        while lo > 1:
+            lo, hi = lo - len(A), lo
+            A = [tuple(range(lo, hi))] + list(zip(*A[::-1])) # example shows A value at each iteration
+        return A
+    # https://www.interviewbit.com/problems/max-distance/ Completed Solution
+    # https://medium.com/solvingalgo/solving-algorithmic-problems-max-distance-in-an-array-7e8c9f71c8b
+    # max j-i where A[i] <= A[j]
+    def maximumGap(self, A):
+        array = list(range(len(A)))
+        array.sort(key = lambda i: A[i]) # sorted A indices 
+        a = b = maxDistance = 0
+        minSofar = array[0]
+        for i in array:
+            if i <= minSofar:
+                minSofar = i
+            elif i - minSofar > maxDistance: # re-compute maxDistance when i (index) > minSofar index as walking the A[i] >= A[minSofar]
+                maxDistance = i - minSofar
+                a, b = i, minSofar
+        return maxDistance
     # https://leetcode.com/problems/set-matrix-zeroes/submissions/
     def setZeroes(self, matrix: List[List[int]]) -> None:
         zy = []
@@ -279,19 +372,56 @@ class Solution:
         return alen+1 # reach end of a, no missing positive
     # https://leetcode.com/problems/find-the-duplicate-number/discuss/72846/My-easy-understood-solution-with-O(n)-time-and-O(1)-space-without-modifying-the-array.-With-clear-explanation.
     # slow/fast pointers starting at position 0: slow == fast at circle entry point
+    # https://keithschwarz.com/interesting/code/?dir=find-duplicate
     def findDuplicate(self, nums: List[int]) -> None:
         if len(nums) > 1:
-            slow = nums[0]
-            fast = nums[nums[0]]
+            slow = nums[0] # slow goes 1 step
+            fast = nums[slow] # fast jumps 2 steps
             while (slow != fast):
                 slow = nums[slow]
                 fast = nums[nums[fast]]
-            fast = 0
+            fast = 0 # slow == fast at circle entry point
             while (fast != slow):
                 fast = nums[fast]
                 slow = nums[slow]
             return slow
         return -1
+    # https://www.interviewbit.com/problems/maximum-unsorted-subarray/
+    def subUnsort(self, A):
+        b=sorted(A) # sorted form of A is B
+        if(A==b):
+            return [-1]
+        else:
+            # LIST OF ALL POINTS WHICH ARE NOT IN CORRECT PLACE
+            L = [ i for i in range(len(A)) if A[i]!=b[i] ]
+            return [min(L),max(L)]
+    # leetcode
+    def subUnsort(self, nums):
+        if nums == None or len(nums) < 2: return 0
+        maxVal, end = -sys.maxsize, -2
+        for i in range(len(nums)):
+            if nums[i] < maxVal: end = i # end points to the last nums value < maxVal (on left of end)
+            else: maxVal = nums[i]
+        minVal, begin = sys.maxsize, -1
+        for i in range(len(nums)-1, -1, -1):
+            if nums[i] > minVal: begin = i # begin points to the last (lowest index in reverse) nums value > minVal (on right of begin)
+            else: minVal = nums[i]
+        return [-1] if [begin,end] == [-1,-2] else [begin,end]
+    # https://leetcode.com/discuss/interview-question/749936/maximum-absolute-difference-amazon
+    #  1. (A[i]+i) - (A[j]+j) 2. (A[i]-i) - (A[j]-j)
+    def maxAbsDiff(self, nums):
+        mx1 = mx2 = -sys.maxsize; mn1 = mn2 = sys.maxsize
+        for i in range(len(nums)):
+            mx1 = max(mx1, nums[i]+i)
+            mn1 = min(mn1, nums[i]+i)
+            mx2 = max(mx2, nums[i]-i)
+            mn2 = min(mn2, nums[i]-i)
+        return max(mx1 - mn1, mx2 - mn2)
+    def maxArr(self, a):
+        n = len(a)
+        ap = [a[i] + i for i in range(n)]
+        am = [a[i] - i for i in range(n)]
+        return max(max(ap) - min(ap), max(am) - min(am))
     # https://leetcode.com/problems/path-sum/submissions/
     def hasPathSum0(self, root, sum):
         if not root:
@@ -2626,9 +2756,9 @@ class Solution:
             if (start > end): return -1
             mid = (start + end) >>1
             if arr[mid] == key: return mid # after this, arr[mid] != key
-            if arr[start] <= arr[mid] and key <= arr[mid] and key >= arr[start]: # key in sorted first half
+            if arr[start] <= arr[mid] and key < arr[mid] and key >= arr[start]: # key in sorted first half
                 return binary_search(arr, start, mid - 1, key)
-            elif arr[mid] <= arr[end] and key >= arr[mid] and key <= arr[end]: # key in sorted 2nd half
+            elif arr[mid] <= arr[end] and key > arr[mid] and key <= arr[end]: # key in sorted 2nd half
                 return binary_search(arr, mid + 1, end, key)
             elif arr[end] <= arr[mid]: return binary_search(arr, mid + 1, end, key) # search key in unsorted 2nd half
             elif arr[start] >= arr[mid]: return binary_search(arr, start, mid - 1, key) # search key in unsorted 1st half
@@ -2643,7 +2773,7 @@ class Solution:
             for j in range(len(nums)-1,mid, -1): # moving j from end to mid
                 if nums[j] == target: return j
         return -1
-    def search(self, nums: List[int], target: int) -> int:
+    def search(self, nums: List[int], target: int) -> int: # return True if target in nums
         if not nums: return False
         pivot = nums[0]
         if target == pivot: return True
@@ -3236,8 +3366,19 @@ if __name__ == "__main__":
 #   print(sol.findInMountainArray(3, arr))
 #   print(sol.firstMissingPositive([1,2,0]))
 #   print(sol.firstMissingPositive([3,4,-1,1]))
-  print(sol.findDuplicate([1,3,4,2,2]))
+#   print(sol.findDuplicate([1,3,4,2,2]))
+#   expected=[1,2,3,6,9,8,7,4,5]
+#   print(expected)
+#   print(sol.spiralOrder([[1,2,3],[4,5,6],[7,8,9]]))
+#   for r in sol.generateMatrix(3): print(r)
+#   for r in sol.generateMatrix(4): print(r)
 #   print(sol.perfectPeak([1,3,2]))
+  print(sol.reverse(1534236469))
+  print(sol.maxAbsDiff([1, 3, -1]))
+  tdata = [69953237, 59183787, 16962742, 53647827, 80157178, 51106992, 58228227, 45131842, 70499719, 70765861, 43961028, 6698667, 99911553, 79107222, 67571988, 39721137, 78088316, 3759045, 19395856, 29387266, 68084358, 62564561, 24736359, 13212412, 66665326, 38724565, 61088241, 21263259, 89291805, 88650356, 58518225, 86449553, 78979492, 39596282, 43927666, 35451400, 80068197, 23391371, 25433080, 5888423, 67042527, 15586432, 57608751, 75903078, 95593533, 15702947, 39691466, 92690796, 18015358, 95172428, 72245309, 15424690, 41199673, 71322081, 27606512, 2347516, 1354382, 9924819, 63458285, 13170098, 40075662, 31237137, 45236128, 74375452, 92722404, 80087546, 23399482, 86945189, 3780890, 1963037, 76980637, 41676736, 74194802, 64788125, 88954508, 95737994, 21365859, 71092491, 67365387, 62345424, 77276892, 53193048, 30131824, 5365626, 66817225, 64511810, 46917019, 80497257, 20853093, 26175229, 85887940, 85764880, 78262084, 609284, 92269014, 46385693, 53718740, 17486900, 98427277, 92911988, 32225164, 72512163, 88678886, 65347756, 40460802, 33132933, 88603373, 26890724, 87077147, 99305881, 55925130, 83289365, 54166373, 50920143, 4427534, 29179799, 91572049, 95103705, 56304651, 69828935, 76914922, 33694020, 15575017, 77664401, 91393916, 96189668, 82107391, 95777779, 22244308, 65701218, 23227429, 98614556, 43407558, 67137144, 34515594, 89248417, 47520685, 14084016, 91725069, 94236666, 61860638, 82315091, 88113674, 31949150, 11718471, 51617813, 41754631, 15588021, 8130184, 52515921, 20663946, 70850137, 85578292, 93271926, 46273611, 27972346, 16865457, 94763722, 28780820, 52198047, 39535546, 9854737, 56888868, 82035778, 88667377, 71915993, 23061619, 71237088, 38215964, 99455111, 84338139, 9438659, 87387886, 35325804, 36964271, 40598041, 83828315, 30761279, 26893177, 19907874, 70129736, 62700567, 91806797, 11958671, 98578052, 8205009, 47197783, 53336153, 36819554, 47426225, 60695466, 55323353, 23435249, 16782401, 37928333, 19599390, 39797644, 9436396, 69658044, 45212110, 48265238, 14183162, 74865579, 58521415, 21894773, 65729368, 91458346, 39977875, 42236097, 12766362, 92049518, 13196912, 18064381, 89025324, 18154460, 77179251, 84814940, 3021813, 25547069, 65821055, 64653709, 94102131, 68518939, 46556175, 82058200, 80932197, 46454512, 62876026, 59675187, 4157064, 56677982, 76761579, 58446935, 51180436, 16416645, 65330136, 39435329, 81388109, 15522197, 78011106, 67617066, 34445170, 75555584, 87940550, 29128931, 61824105, 63418827, 21298249, 19352955, 91556471, 92675461, 888811, 61724633, 69153235, 83033789, 60689257, 54479401, 27546578, 66335535, 38378169, 6852142, 76001740, 64337900, 84778273, 7063943, 20469454, 8897942, 81095011, 89277538, 89473685, 13442135, 54332314, 99428305, 49227963, 1550084, 58626108, 3149845, 9592847, 63553909, 64442175, 52746464, 71731610, 68109474, 12014994, 28405025, 342244, 77415207, 6554496, 29199336, 24816541, 86021818, 93254912, 70091579, 24906579, 50431415, 92218181, 96921595, 70001355, 69278435, 48183386, 4909222, 9784895, 59239264, 82952057, 54807579, 85365017, 10747717, 36328910, 99503949, 25462804, 1948980, 54007615, 93059997, 96143890, 87526013, 36668467, 6585021, 59026699, 42437483, 49977217, 10735602, 29201394, 54519214, 94548380, 46479340, 50083557, 9899537, 43429844, 62002345, 57109791, 15539611, 37100828, 96624737, 58882555, 18287280, 73908899, 58094409, 31628808, 7279505, 87539497, 35968234, 73051936, 9182618, 6399914, 85644731, 13422910, 6027207, 40194013, 49063637, 47973273, 98583990, 4494264, 54221620, 99760871, 52094275, 44298611, 98771831, 39244836, 20234483, 63104483, 17667669, 77220658, 97536077, 67203516, 9567573, 96789571, 6954478, 9245869, 82742448, 72371341, 57459624, 25406080, 52099423, 49750024, 77497879, 16327199, 39571526, 14570597, 76246637, 93751329, 86339423, 97188050, 48457113, 52455837, 77244782, 81308324, 74575702, 31144906, 30685803, 21269958, 31958563, 20917120, 52658082, 33778983, 85532378, 6177062, 35138461, 27377273, 68310047, 27164914, 24236293, 90140894, 26903650, 31650250, 45975378, 10537609, 11918603, 92943222, 77479401, 42865540, 50885917, 57892395, 55161914, 82804155, 16502312, 25439804, 2105003, 52617639, 69471748, 48335908, 17352118, 36510341, 55222894, 6319593, 79662620, 37402118, 68949184, 48515926, 12224685, 8095432, 36227103, 37292769, 79979610, 78482598, 23728343, 26166144, 41593189, 44829841, 44241275, 43522523, 63777807, 3827324, 2683674, 3824814, 35307572, 1837804, 12651831, 24382914, 44014481, 16990793, 41894672, 33681016]
+  tdata = [46158044, 9306314, 51157916, 93803496, 20512678, 55668109, 488932, 24018019, 91386538, 68676911, 92581441, 66802896, 10401330, 57053542, 42836847, 24523157, 50084224, 16223673, 18392448, 61771874, 75040277, 30393366, 1248593, 71015899, 20545868, 75781058, 2819173, 37183571, 94307760, 88949450, 9352766, 26990547, 4035684, 57106547, 62393125, 74101466, 87693129, 84620455, 98589753, 8374427, 59030017, 69501866, 47507712, 84139250, 97401195, 32307123, 41600232, 52669409, 61249959, 88263327, 3194185, 10842291, 37741683, 14638221, 61808847, 86673222, 12380549, 39609235, 98726824, 81436765, 48701855, 42166094, 88595721, 11566537, 63715832, 21604701, 83321269, 34496410, 48653819, 77422556, 51748960, 83040347, 12893783, 57429375, 13500426, 49447417, 50826659, 22709813, 33096541, 55283208, 31924546, 54079534, 38900717, 94495657, 6472104, 47947703, 50659890, 33719501, 57117161, 20478224, 77975153, 52822862, 13155282, 6481416, 67356400, 36491447, 4084060, 5884644, 91621319, 43488994, 71554661, 41611278, 28547265, 26692589, 82826028, 72214268, 98604736, 60193708, 95417547, 73177938, 50713342, 6283439, 79043764, 52027740, 17648022, 33730552, 42851318, 13232185, 95479426, 70580777, 24710823, 48306195, 31248704, 24224431, 99173104, 31216940, 66551773, 94516629, 67345352, 62715266, 8776225, 18603704, 7611906]
+  print(sol.maximumGap(tdata))
+  print(sol.maximumGap([3, 5, 4, 2]))
 #   print(sol.nextPermutation([100,99,98,97,96,95,94,93,92,91,90,89,88,87,86,85,84,83,82,81,80,79,78,77,76,75,74,73,72,71,70,69,68,67,66,65,64,63,62,61,60,59,58,57,56,55,54,53,52,51,50,49,48,47,46,45,44,43,42,41,40,39,38,37,36,35,34,33,32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1]))
 #   print(sol.nextPermutation([3,2,1]))
 #   print(sol.getPermutation(4,13))

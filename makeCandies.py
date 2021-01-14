@@ -1,24 +1,16 @@
 from math import ceil, sqrt
 from sys import maxsize
-# A function to print all prime factors of 
-# a given number n 
+# All prime factors of n 
 def primeFactors(n): 
     ret = []
-    # Print the number of two's that divide n 
-    while n % 2 == 0: 
+    while n % 2 == 0: # number of two's that divide n 
         ret.append(2)
         n = n // 2
-    # n must be odd at this point 
-    # so a skip of 2 ( i = i + 2) can be used 
-    for i in range(3,int(sqrt(n))+1,2): 
-        # while i divides n , print i ad divide n 
-        while n % i== 0: 
+    for i in range(3,int(sqrt(n))+1,2): # n must be odd at this point, kip of 2 ( i = i + 2)
+        while n % i== 0:
             ret.append(i)
-            n = n // i      
-    # Condition if n is a prime 
-    # number greater than 2 
-    if n > 2:
-        ret.append(n)
+            n = n // i
+    if n > 2: ret.append(n) # if n is a prime, n > 2 
     return ret
 
 def computePasses(m, w, p, n, m1, w1):
