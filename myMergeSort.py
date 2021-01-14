@@ -13,7 +13,6 @@ def merge(l,r):
             result.append(r[rIdx])
             rIdx += 1
     return result
-
 def mergeSort(a):
     lenA = len(a)
     if lenA == 1:

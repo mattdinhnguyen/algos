@@ -364,24 +364,37 @@ class Solution:
         for i in range(alen):
             pos = a[i]-1
             while 0 < a[i] <= alen and a[i] != a[pos]:
-                a[i], a[pos] = a[pos], a[i] # kep putting a[i] in its position
+                a[i], a[pos] = a[pos], a[i] # keep putting a[i] in its position
                 pos = a[i]-1 # pos for new a[i] value
         for i in range(alen):
             if a[i] != i+1:
                 return i+1 # look for first value not in its position, return the value based on position
         return alen+1 # reach end of a, no missing positive
+    # https://leetcode.com/problems/find-the-duplicate-number/discuss/72844/Two-Solutions-(with-explanation)%3A-O(nlog(n))-and-O(n)-time-O(1)-space-without-changing-the-input-array
+    def findDuplicate(self, nums: List[int]) -> int: # slower
+        low, high = 1, len(nums)-1
+        while low < high:
+            mid = low+(high-low)//2
+            count = 0
+            for i in nums:
+                if i <= mid:
+                    count+=1
+            if count <= mid: low = mid+1
+            else: high = mid
+        return low
     # https://leetcode.com/problems/find-the-duplicate-number/discuss/72846/My-easy-understood-solution-with-O(n)-time-and-O(1)-space-without-modifying-the-array.-With-clear-explanation.
     # slow/fast pointers starting at position 0: slow == fast at circle entry point
     # https://keithschwarz.com/interesting/code/?dir=find-duplicate
+    # slow/fast(2*slow)
     def findDuplicate(self, nums: List[int]) -> None:
         if len(nums) > 1:
-            slow = nums[0] # slow goes 1 step
-            fast = nums[slow] # fast jumps 2 steps
-            while (slow != fast):
+            slow = nums[0]
+            fast = nums[nums[0]] # 2*slow
+            while (slow != fast): # slow == fast slow meets fast in circle
                 slow = nums[slow]
                 fast = nums[nums[fast]]
-            fast = 0 # slow == fast at circle entry point
-            while (fast != slow):
+            fast = 0 # fast start at 0, slow starts at meet point, slow == fast at circle entry point
+            while (fast != slow): # duplicate number must be the entry point of the circle when visiting the array from nums[0]
                 fast = nums[fast]
                 slow = nums[slow]
             return slow
@@ -422,6 +435,18 @@ class Solution:
         ap = [a[i] + i for i in range(n)]
         am = [a[i] - i for i in range(n)]
         return max(max(ap) - min(ap), max(am) - min(am))
+    # Loop over all items, for even positioned items, if the item is larger than next item, swap next and current.
+    # For odd positioned items, if current item is smaller than next item, swap next and current.
+    # Use logic to prove after swapping next and current, the inequality for current and previous still holds.
+    def waveArray(self, A):
+        A.sort()
+        for i in range(len(A) -1):
+            if i%2: # even due to 0-based index
+                if A[i] > A[i+1]:
+                    A[i], A[i+1] = A[i+1], A[i]
+            elif A[i] < A[i+1]:
+                A[i], A[i+1] = A[i+1], A[i]
+        return A
     # https://leetcode.com/problems/path-sum/submissions/
     def hasPathSum0(self, root, sum):
         if not root:
@@ -3205,6 +3230,32 @@ class Solution:
             maxProf = prices[i] + self.computeMaxProfit(prices, size-i-1)
             maxProfit = max(maxProfit, maxProf)
         return maxProfit
+    # https://www.youtube.com/watch?v=uQ_YsvOuXRY https://github.com/shreya367/InterviewBit/blob/master/Array/Repeat%20and%20missing%20number%20array
+    def repeatMissingNumbers(self, A):
+        aSum, a2Sum = sum(A), sum((n*n for n in A))
+        nSum, n2Sum = sum(range(1,len(A)+1)), sum((n*n for n in range(1,len(A)+1)))
+        x, y = aSum - nSum, a2Sum - n2Sum
+        a = (x + y//x)//2
+        return [a, a-x]
+    # Pascal triangle https://github.com/shreya367/InterviewBit/blob/master/Array/Pascal%20triangle%20rows
+    def pascalTriang(self, N):
+        res = [[1]]
+        for _ in range(N-1):
+            _res = res[-1][:]
+            _res.append(1)
+            for i in range(1,len(_res)-1):
+                _res[i] += res[-1][i-1]
+            res.append(_res)
+        return res    
+    def pascalTriangRow(self, k):
+        res = [1]
+        for _ in range(k):
+            _res = res[:]
+            _res.append(1)
+            for i in range(1,len(_res)-1):
+                _res[i] += res[i-1]
+            res = _res
+        return res
 class Node(object):
     def __init__(self):
         self.outgoing_nodes = set()
@@ -3364,6 +3415,7 @@ if __name__ == "__main__":
 #   print(sol.nextPermutation([1,2,3]))
 #   arr = MountainArray([1,2,3,4,5,3,1])
 #   print(sol.findInMountainArray(3, arr))
+  print(sol.pascalTriangRow(3))
 #   print(sol.firstMissingPositive([1,2,0]))
 #   print(sol.firstMissingPositive([3,4,-1,1]))
 #   print(sol.findDuplicate([1,3,4,2,2]))
@@ -3372,6 +3424,9 @@ if __name__ == "__main__":
 #   print(sol.spiralOrder([[1,2,3],[4,5,6],[7,8,9]]))
 #   for r in sol.generateMatrix(3): print(r)
 #   for r in sol.generateMatrix(4): print(r)
+#   print(sol.repeatMissingNumbers([3, 1, 2, 5, 3]))
+#   print(sol.waveArray([3,1,7,2,8]))
+#   print(sol.findDuplicate([1,3,4,2,2]))
 #   print(sol.perfectPeak([1,3,2]))
   print(sol.reverse(1534236469))
   print(sol.maxAbsDiff([1, 3, -1]))

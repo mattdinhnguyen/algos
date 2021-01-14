@@ -1,9 +1,7 @@
-import math
-import os
-import random
-import re
-import sys
+import os, sys, re, math
+from random import randint
 from timeit import timeit
+from timeit import repeat
 from functools import cmp_to_key
 import heapq
 class Solution:
@@ -12,7 +10,10 @@ class Solution:
         if not any(nums): return "0"
         compare = lambda a, b: 1 if a+b < b+a else -1 if a+b > b+a else 0
         return "".join(sorted(map(str, nums), key=cmp_to_key(compare)))
-        
+
+    def compare(self, n1, n2):
+        return str(n1) + str(n2) > str(n2) + str(n1)
+
     # bubble sort
     def largestNumber2(self, nums):
         for i in range(len(nums), 0, -1):
@@ -20,10 +21,7 @@ class Solution:
                 if not self.compare(nums[j], nums[j+1]):
                     nums[j], nums[j+1] = nums[j+1], nums[j]
         return str(int("".join(map(str, nums))))
-        
-    def compare(self, n1, n2):
-        return str(n1) + str(n2) > str(n2) + str(n1)
-        
+
     # selection sort
     def largestNumber3(self, nums):
         for i in range(len(nums), 0, -1):
@@ -124,7 +122,6 @@ class Player:
         else:
             return 0
 
-@timeit
 def mergeSort(a):
   if len(a) > 1:
     mid = len(a)//2
@@ -151,7 +148,6 @@ def mergeSort(a):
       j += 1
       k += 1
 
-# Complete the insertionSort2 function below.
 def insertSort2(a):
     n = len(a)
     for i in range(1,n):
@@ -163,7 +159,6 @@ def insertSort2(a):
         if a[j] > a[i]:
             a[i],a[j] = a[j],a[i]
         print(*a)
-@timeit
 def quickSort(a):
     if len(a) < 2: return a
     l, r, e = [], [], a[:1]
@@ -186,7 +181,6 @@ def partition(a, low, high):
   j += 1
   a[j], a[high] = a[high], a[j]
   return j
-# @timeit
 def quickSort2(a, low, high):
   if low < high:
       pi = partition(a, low, high)
@@ -234,11 +228,75 @@ def heapqsort(iterable):
     h = iterable[:]
     heapq.heapify(h)
     return [heapq.heappop(h) for i in range(len(h))]
+class Solution:
+    def subUnsort(self, nums):
+        if nums == None or len(nums) < 2: return 0
+        maxVal, end = -sys.maxsize, -2
+        for i in range(len(nums)):
+            if nums[i] < maxVal: end = i # end points to the last nums value < maxVal (on left of end)
+            else: maxVal = nums[i]
+        minVal, begin = sys.maxsize, -1
+        for i in range(len(nums)-1, -1, -1):
+            if nums[i] > minVal: begin = i # begin points to the last (lowest index in reverse) nums value > minVal (on right of begin)
+            else: minVal = nums[i]
+        return end - begin + 1
+    # https://www.youtube.com/watch?v=uQ_YsvOuXRY https://github.com/shreya367/InterviewBit/blob/master/Array/Repeat%20and%20missing%20number%20array
+    def repeatMissingNumbers(A):
+        aSum, a2Sum = sum(A), sum((n*n for n in A))
+        nSum, n2Sum = sum(range(1,len(A)+1)), sum((n*n for n in range(1,len(A)+1)))
+        x, y = aSum - nSum, a2Sum - n2Sum
+        a = (x + y/x)/2
+        return [a, a-x]
 
+def subUnsort(A):
+    lenA = len(A)
+    if lenA < 2: return 0
+    if lenA < 3: return 2 if A[0] > A[1] else 0 
+    i = -1
+    maxVal = -sys.maxsize
+    k = 0
+    j = 1
+    for j in range(1,lenA):
+        if A[j] < A[j-1] or A[j] < maxVal:
+            if i == -1:
+                i = j-1
+            while i > 0: # grow left, as A[j] is new min
+                if A[i-1] <= A[j]: break
+                i -= 1
+            k = j # k points to new min
+            maxVal = max(maxVal, A[j-1])
+    return 0 if [i,j] == [-1,lenA-1] else k-i+1
+    # return [-1] if [i,j] == [0,len(A)-1] else [i,j]
+# https://realpython.com/sorting-algorithms-python/
+def run_sorting_algorithm(algorithm, array):
+    # Set up the context and prepare the call to the specified
+    # algorithm using the supplied array. Only import the
+    # algorithm function if it's not the built-in `sorted()`.
+    setup_code = f"from __main__ import {algorithm}" \
+        if algorithm != "sorted" else ""
+
+    stmt = f"{algorithm}({array})"
+
+    # Execute the code ten different times and return the time
+    # in seconds that each execution took
+    times = repeat(setup=setup_code, stmt=stmt, repeat=3, number=10)
+
+    # Finally, display the name of the algorithm and the
+    # minimum time it took to run
+    print(f"Algorithm: {algorithm}. Minimum execution time: {min(times)}")
+ARRAY_LENGTH = 1000
 if __name__ == '__main__':
-# insertionSort2(6, [1, 4, 3, 5, 6, 2])
-# print(' '.join(map(str, quickSort([4, 5, 3, 7, 2]))))
-# print(' '.join(map(str, quickSort([5, 8, 1, 3, 7, 9, 2]))))
+    sol = Solution()
+    print(sol.subUnsort([-1,-1,-1,-1,-1]))
+    print(sol.subUnsort([5,4,3,2,1]))
+    print(sol.subUnsort([2,3,3,2,4]))
+    print(sol.subUnsort([3,2,3,2,4]))
+    print(sol.subUnsort([1, 3, 2, 4, 5]))
+    array = [randint(0, 1000) for i in range(ARRAY_LENGTH)]
+    run_sorting_algorithm(algorithm="sorted", array=array)
+    insertSort2([1, 4, 3, 5, 6, 2])
+    print(' '.join(map(str, quickSort([4, 5, 3, 7, 2]))))
+    print(' '.join(map(str, quickSort([5, 8, 1, 3, 7, 9, 2]))))
     a = [5, 8, 1, 3, 7, 9, 2]
     b = a[:]
     c = a[:]
