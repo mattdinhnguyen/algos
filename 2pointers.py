@@ -2,7 +2,7 @@ from typing import List
 from collections import deque, defaultdict, Counter
 from functools import reduce
 from minSubStrHasT import min_length_substring
-
+from bisect import bisect_left
 class Solution:
     # https://leetcode.com/problems/squares-of-a-sorted-array/
     # Given an array of integers A sorted in non-decreasing order,
@@ -190,10 +190,24 @@ class Solution:
                 start = begin
                 d = end-begin+1 # while valid, update d, add 1 to include char at end
         return d,s[start:start+d]
+    def threeSumClosest(self, nums: List[int], target: int) -> int: # return 3sum closest to target
+        nums.sort()
+        result = nums[0] + nums[1] + nums[2] # init
+        for i in range(len(nums)-2): # iterate 0..nums[-3]
+            if i > 0 and nums[i] == nums[i-1]: continue # update: ignore the duplicate numbers
+            l, r = i + 1, len(nums) - 1 # 2 pointers: i+1 and far right
+            while l < r:
+                curSum = nums[l] + nums[r] + nums[i]
+                if curSum == target: return target
+                if abs(curSum-target) < abs(result-target): result = curSum # update closest 3sum
+                if curSum < target: l += 1 # move l right
+                else: r -= 1 # move r left
+        return result
 if __name__ == '__main__':
     sol = Solution()
-    st = ["ADOBECODEBANC","ABC"]
-    print(sol.minWindow(*st), min_length_substring(*st))
+    # st = ["ADOBECODEBANC","ABC"]
+    # print(sol.minWindow(*st), min_length_substring(*st))
+    assert sol.threeSumClosest([-1,2,1,-4],1) == 2
     # print(sol.lengthOfLongestSubstring("AABCCCEFG"))
     # print(sol.lengthOfLongestSubstringTwoDistinct("AABBCCCEFG"))
     # print(sol.lengthOfLongestSubstringTwoDistinct("AABCC"))

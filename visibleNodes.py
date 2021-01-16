@@ -2873,15 +2873,51 @@ class Solution:
     # 1 line with bisect
     def searchMatrix(self, matrix, target):
         return bool(matrix) and target in matrix[bisect(matrix, [target + 0.5]) - 1]
-    # def searchMatrix(self, matrix, target):
+    def searchMatrix(self, matrix, target):
         m = bisect(matrix, [target+0.5])
         return len(matrix[0]) > 0 and matrix[m - 1][bisect(matrix[m - 1], target) - 1] == target if m else False
-    # def searchMatrix(self, matrix, target):
-        m = bisect(matrix, [target + 0.5])
+    def searchMatrix(self, matrix, target):
+        m = bisect(matrix, [target + 0.5]) #log(R)
         if m:
-            n = bisect(matrix[m - 1], target)
+            n = bisect(matrix[m - 1], target) #log(C)
             return len(matrix[0]) > 0 and matrix[m - 1][n - 1] == target
         return False
+    # https://leetcode.com/problems/search-a-2d-matrix-ii/
+    def searchMatrix2(self, matrix, target):
+        for r in matrix:
+            if r[0] <= target <= r[-1]:
+                if r[bisect_left(r, target)] == target:
+                    return True
+        return False
+    # https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/
+    def searchRange(self, nums: List[int], target: int) -> List[int]:
+        if nums:
+            i = j = bisect_left(nums, target)
+            if i != len(nums) and nums[i] == target:
+                while j+1 < len(nums) and nums[j+1] == target:
+                    j += 1
+                return [i,j]
+        return [-1,-1]
+    def searchRange(self, nums: List[int], target: int) -> List[int]:
+        if nums:
+            i = j = bisect_left(nums, target)
+            if i != len(nums) and nums[i] == target:
+                j = bisect_right(nums, target, lo=j)
+                return [i,j-1]
+        return [-1,-1]
+    # https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/discuss/14707/9-11-lines-O(log-n)
+    def searchRange(self, nums, target):
+        def search(n):
+            lo, hi = 0, len(nums)
+            while lo < hi:
+                mid = (lo + hi) // 2
+                if nums[mid] >= n:
+                    hi = mid
+                else:
+                    lo = mid + 1
+            return lo
+        lo = search(target)
+        return [lo, search(target+1)-1] if target in nums[lo:lo+1] else [-1, -1]
     # https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/discuss/48491/1-2-lines-RubyPython
     # Use binary search to find the first number that's less than or equal to the last.
     # https://stackoverflow.com/questions/44937234/object-does-not-support-indexing-when-overriding-getitem
@@ -3458,6 +3494,13 @@ if __name__ == "__main__":
     # res = sol.findMinHeightTrees(3,[[0,1],[0,2]])
     # res = sol.findMinHeightTrees(*tdata)
     # res = sol.pacificAtlantic([[1,2,2,3,5],[3,2,3,4,4],[2,4,5,3,1],[6,7,1,4,5],[5,1,1,2,4]])
+    assert sol.searchRange([5, 7, 7, 8, 8, 10],8) == [3,4]
+    assert sol.searchRange([5, 17, 100, 111],3) == [-1,-1]
+    assert sol.searchMatrix2([[1,4,7,11,15],[2,5,8,12,19],[3,6,9,16,22],[10,13,14,17,24],[18,21,23,26,30]],5) == True
+    assert sol.searchMatrix2([[1,4,7,11,15],[2,5,8,12,19],[3,6,9,16,22],[10,13,14,17,24],[18,21,23,26,30]],20) == False
+    assert sol.searchRange([],0) == [-1,-1]
+    assert sol.searchRange([5,7,7,8,8,10],8) == [3,4]
+    assert sol.searchRange([5,7,7,8,8,10],6) == [-1,-1]
     # res = sol.searchMatrix([[1,3,5,7],[10,11,16,20],[23,30,34,50]],3)
     # res = sol.search([1,2,1],2)
     # res = sol.subsetsWithDup([1,2,2,3])
