@@ -1,16 +1,16 @@
-#!/usr/local/bin/python3.7
-# import random
-# random.seed(0)
-# lst = [0]
-# lst += [random.randint(1, 10) for _ in range(10)]
-# print(lst)
+#!/usr/local/bin/python
+import random
+random.seed(0)
+lst = [0]
+lst += [random.randint(1, 10) for _ in range(10)]
+print(lst)
 def parent(n):
-    return int((n-1)/2)
+    return (n-1)//2
 def lchild(n):
     return 2*n+1
 def rchild(n):
     return 2*n+2
-def lchildV(l, n):
+def lchildV(l, n): # left child value
     return l[lchild(n)]
 def rchildV(l, n):
     return l[rchild(n)]

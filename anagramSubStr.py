@@ -39,13 +39,12 @@ for tdata in testVector:
 '''
 https://www.hackerrank.com/challenges/sherlock-and-anagrams/problem
 Given a string, find the number of pairs of substrings of the string that are anagrams of each other.
-How I solve this: The order of letters in a pair of anagrams doesn't matter, only what the letters are.
-Therefore: 1) Start by iterating over the string to extract substrings
+The order of letters in a pair of anagrams doesn't matter, only what the letters are.
+1) Start by iterating over the string to extract substrings
 2) Instead of storing every substring to later compare it against every other single substring: Sort substring alphabetically before storing
 3) Store the sorted string in a map of string to number of occurences
 4) Every time you find a new substring, sort it, if there is already a match or several in your hashmap, add the number of already existing occurences to your anagram counter, increment in hashmap
 '''
-@timeit
 def sherlockAndAnagrams(s):
     ssFreqs = Counter(s)
 
@@ -53,7 +52,7 @@ def sherlockAndAnagrams(s):
         for i in range(0,len(s)-l+1):
             key = frozenset(Counter(s[i:i+l]).items())
             ssFreqs[key] += 1
-    return sum(map(lambda x: x*(x-1)//2, ssFreqs.values()))
+    return sum(map(lambda x: x*(x-1)//2, ssFreqs.values())) # number of pairs of substrings that are anagrams of each other
 
 def sherlockAndAnagrams1(string):
     buckets = Counter()
@@ -91,11 +90,11 @@ def isValid(s):
 
 #{ a: 11111, b: 11111, c: 11111, d: 11111, e: 11111, f: 11111, g: 11111, h: 11111, i: 11111, p: 1 }
 if __name__ == "__main__":
-    # ss = "ibfdgaeadiaefgbhbdghhhbgdfgeiccbiehhfcggchgghadhdhagfbahhddgghbdehidbibaeaagaeeigffcebfbaieggabcfbiiedcabfihchdfabifahcbhagccbdfifhghcadfiadeeaheeddddiecaicbgigccageicehfdhdgafaddhffadigfhhcaedcedecafeacbdacgfgfeeibgaiffdehigebhhehiaahfidibccdcdagifgaihacihadecgifihbebffebdfbchbgigeccahgihbcbcaggebaaafgfedbfgagfediddghdgbgehhhifhgcedechahidcbchebheihaadbbbiaiccededchdagfhccfdefigfibifabeiaccghcegfbcghaefifbachebaacbhbfgfddeceababbacgffbagidebeadfihaefefegbghgddbbgddeehgfbhafbccidebgehifafgbghafacgfdccgifdcbbbidfifhdaibgigebigaedeaaiadegfefbhacgddhchgcbgcaeaieiegiffchbgbebgbehbbfcebciiagacaiechdigbgbghefcahgbhfibhedaeeiffebdiabcifgccdefabccdghehfibfiifdaicfedagahhdcbhbicdgibgcedieihcichadgchgbdcdagaihebbabhibcihicadgadfcihdheefbhffiageddhgahaidfdhhdbgciiaciegchiiebfbcbhaeagccfhbfhaddagnfieihghfbaggiffbbfbecgaiiidccdceadbbdfgigibgcgchafccdchgifdeieicbaididhfcfdedbhaadedfageigfdehgcdaecaebebebfcieaecfagfdieaefdiedbcadchabhebgehiidfcgahcdhcdhgchhiiheffiifeegcfdgbdeffhgeghdfhbfbifgidcafbfcd"
-    # for s in ["aaaaabc","aabbcd", ss, "a"*111 + "b"*111 + "c"*111 + "p"*1, "aaabbcc","abcdefghhgfedecba","aabbcd"]:
-    #     print(isValid(s))
+    ss = "ibfdgaeadiaefgbhbdghhhbgdfgeiccbiehhfcggchgghadhdhagfbahhddgghbdehidbibaeaagaeeigffcebfbaieggabcfbiiedcabfihchdfabifahcbhagccbdfifhghcadfiadeeaheeddddiecaicbgigccageicehfdhdgafaddhffadigfhhcaedcedecafeacbdacgfgfeeibgaiffdehigebhhehiaahfidibccdcdagifgaihacihadecgifihbebffebdfbchbgigeccahgihbcbcaggebaaafgfedbfgagfediddghdgbgehhhifhgcedechahidcbchebheihaadbbbiaiccededchdagfhccfdefigfibifabeiaccghcegfbcghaefifbachebaacbhbfgfddeceababbacgffbagidebeadfihaefefegbghgddbbgddeehgfbhafbccidebgehifafgbghafacgfdccgifdcbbbidfifhdaibgigebigaedeaaiadegfefbhacgddhchgcbgcaeaieiegiffchbgbebgbehbbfcebciiagacaiechdigbgbghefcahgbhfibhedaeeiffebdiabcifgccdefabccdghehfibfiifdaicfedagahhdcbhbicdgibgcedieihcichadgchgbdcdagaihebbabhibcihicadgadfcihdheefbhffiageddhgahaidfdhhdbgciiaciegchiiebfbcbhaeagccfhbfhaddagnfieihghfbaggiffbbfbecgaiiidccdceadbbdfgigibgcgchafccdchgifdeieicbaididhfcfdedbhaadedfageigfdehgcdaecaebebebfcieaecfagfdieaefdiedbcadchabhebgehiidfcgahcdhcdhgchhiiheffiifeegcfdgbdeffhgeghdfhbfbifgidcafbfcd"
+    for s in ["aaaaabc","aabbcd", ss, "a"*111 + "b"*111 + "c"*111 + "p"*1, "aaabbcc","abcdefghhgfedecba","aabbcd"]:
+        print(isValid(s))
 
     # print(makeAnagram("cde","abc"))
 
     for s in ["ifailuhkqq","kkkk","abba","abcd"]:
-        print(sherlockAndAnagrams(s),sherlockAndAnagrams1(s))
+        assert sherlockAndAnagrams(s) == sherlockAndAnagrams1(s)

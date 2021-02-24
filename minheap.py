@@ -2,40 +2,6 @@ from typing import List
 from sys import stdin, maxsize
 from heapq import heappush, heappop, merge
 
-# Find the smallest range that includes at least one number from each of the k sorted lists of int.
-# 1. initialize smallest_range as MAX_INT
-# 2. keep 3 pointers/index p1, p2 and p3 which points to the first elements of lists L1, L2 and L3 respectively.
-# 3. find the max value and min value pointed/indexed by p1, p2 and p3
-# 4. difference of max value and min value discovered in step 3 is the current range. compare it with smallest_range and update it, if found smaller.
-# 5. increment the pointer/index of min value found in step 3.
-# 6. repeat step 3 to 5 until the pointer/index of min value is in range.
-
-def find_minimum_range(sequences):#N
-    # Maintain information which sequence each item belongs to
-    sequences = [[(item, n) for item in seq] for n, seq in enumerate(sequences)]
-    # Merge sequences into a single minheap, taking advantage of already sorted lists
-    heap = merge(*sequences)
-    # Current items to test
-    found_range = None
-    last_range = maxsize
-    current_items = [None] * len(sequences)
-    for item, n in heap: #N
-        current_items[n] = item
-        if not all(current_items): # List not yet filled
-            continue
-        # Find range of current selection
-        minimum = min(current_items)
-        maximum = max(current_items)
-        current_range = abs(maximum-minimum)
-        # Update minimum range
-        if current_range < last_range:
-            found_range = [minimum, maximum]
-            last_range = current_range
-    
-    return found_range
-
-print(find_minimum_range([[4, 10, 15, 24, 26],[0, 9, 12, 20],[5, 18, 22, 30]]))
-
 class MyBST():
 
     def __init__(self, vals: List[int] = []) -> None:

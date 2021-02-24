@@ -5,6 +5,7 @@ from timeit import repeat
 from functools import cmp_to_key
 import heapq
 class Solution:
+# https://github.com/tuvo1106/python_sorting_algorithms
 # https://leetcode.com/problems/largest-number/discuss/53298/Python-different-solutions-(bubble-insertion-selection-merge-quick-sorts).
     def largestNumber(self, nums):
         if not any(nums): return "0"
@@ -172,15 +173,13 @@ def quickSort(a):
     return result
 
 def partition(a, low, high):
-  j = low-1
-  pivot = a[high]
+  j = low-1; pivot = a[high]
   for i in range(low,high):
-      if a[i] < pivot:
-        j += 1
-        a[i], a[j] = a[j], a[i]
+      if a[i] < pivot: # move smaller numbers to low end, after j index
+        j += 1; a[i], a[j] = a[j], a[i]
   j += 1
-  a[j], a[high] = a[high], a[j]
-  return j
+  a[j], a[high] = a[high], a[j] # swap pivot value to its position
+  return j # pivot position, left (right) partition values < (>=) than pivot value 
 def quickSort2(a, low, high):
   if low < high:
       pi = partition(a, low, high)
@@ -188,21 +187,26 @@ def quickSort2(a, low, high):
       quickSort2(a, pi+1, high)
 
 def maxheapify(a, n, i): #logN
-    l = 2*i + 1
-    r = l + 1
+    l = 2*i + 1; r = l + 1
     largest = i
     if l < n and a[l] > a[largest]:
         largest = l
     if r < n and a[r] > a[largest]:
         largest = r
-    if largest != i:
+    if largest != i: # swap i value with larger of left or right
         a[i], a[largest] = a[largest], a[i]
         maxheapify(a, n, largest)
 
+def maxheappush(a, n):
+    pass
+
 def maxheappop(a):
-    a0 = a[0]
-    a[0] = a.pop()
-    maxheapify(a,len(a),0)
+    if len(a) == 0: raise IndexError
+    a0 = a[0] # max value
+    if len(a) == 1: a.pop()
+    else:
+        a[0] = a.pop() # move last to root
+        maxheapify(a,len(a),0) # heapify root
     return a0
 
 def nlargest(k, a):
@@ -214,7 +218,7 @@ def nlargest(k, a):
 def maxheap(a): #NlogN
     n = len(a)
     for i in range(n//2-1, -1, -1):
-        maxheapify(a, n, i)
+        maxheapify(a, n, i) # heapify from leaves to root
 
 def heapsort(a): #NlogN
     n = len(a)

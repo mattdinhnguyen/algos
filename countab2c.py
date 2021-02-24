@@ -116,8 +116,7 @@ def solution(n: int) -> list:
             return list(perm)
     return []
 
-# find all combinations where every element appears twice and distance 
-# between appearances is equal to the value 
+# find all combinations where every element appears twice and distance between appearances is equal to the value 
 def allCombinationsRec(arr, elem, n): 
 
 	# if all elements are filled, print the solution 
@@ -137,9 +136,7 @@ def allCombinationsRec(arr, elem, n):
 			# recurse for next element 
 			allCombinationsRec(arr, elem + 1, n) 
 
-			# backtrack (remove elem from 
-			# position i and (i+elem+1) ) 
-			arr[i] = -1
+			arr[i] = -1 # backtrack: remove elem from position i and (i+elem+1)
 			arr[i + elem + 1] = -1
 		
 def allCombinations(n): 

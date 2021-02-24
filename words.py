@@ -31,7 +31,7 @@ class WordDictionary:
         return bool(nodes)
 
     def search2(self, word: str) -> bool:
-        nodes = [self.    words]
+        nodes = [self.words]
         for char in word:
             nodes = [kid
                      for node in nodes
@@ -68,7 +68,6 @@ class WordDictionary:
 
 class WordSearch(WordDictionary):
     def findWords(self, board, words):
-
         root = {}
         for word in words:
             node = root
@@ -125,7 +124,7 @@ if __name__ == '__main__':
     ws = WordSearch()
     board = [["o","a","a","n"],["e","t","a","e"],["i","h","k","r"],["i","f","l","v"]]
     words = ["oath","pea","eat","rain"]
-    # print(ws.findWords(board,words))
+    print(ws.findWords(board,words))
 
     words = WordDictionary()
     ans = []
@@ -140,7 +139,7 @@ if __name__ == '__main__':
         words.addWord(w)
     for w in ["a",".at"]:
         ans.append(words.searchWords(w))
-    words.addWord("bat")
+    words.insert("bat")
     words.remove("bat")
     for w in [".at","an.","a.d.","b.","a.d","."]:
         ans.append(words.searchWords(w))

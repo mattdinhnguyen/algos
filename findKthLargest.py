@@ -4,6 +4,7 @@ from collections import defaultdict
 from sorts import quickSort2, partition
 from bisect import bisect_left
 from typing import List
+import os
 # space/time N/N^2
 '''Suppose you have an unordered array with N values.
 
@@ -35,23 +36,21 @@ def findKthSmallestN(arr,k):
 def findKthSmallest(arr, l, r, k):
     if k >= 0 and k <= r - l + 1:
         pos = partition(arr, l, r)
-        if pos - l == k:
-            return arr[pos]
-        if pos - l > k:
-            return findKthSmallest(arr, l, pos - 1, k)
+        if pos - l == k: return arr[pos]
+        if pos - l > k: return findKthSmallest(arr, l, pos - 1, k)
         return findKthSmallest(arr, pos + 1, r, k + l - pos - 1)
     return 0
-def findKthLargest(self, nums: List[int], k: int) -> int:
-    return -self.findKthSmallest(list(map(lambda n: -n, nums)), 0, len(nums)-1, k-1)
+def findKthLargest(nums: List[int], k: int) -> int:
+    return -findKthSmallest(list(map(lambda n: -n, nums)), 0, len(nums)-1, k-1)
 
 # 38046 78149 97560 174498 3083
 if __name__ == '__main__':
-    fptr = open("countInversions0.ut")
+    fptr = open(os.path.dirname(__file__) + "/countInversions0.ut")
 
     for t in range(int(fptr.readline().rstrip())):
         n = int(fptr.readline().rstrip())
         arr = list(map(int, fptr.readline().rstrip().split()))
         # ans = findKthSmallest(arr, 0, len(arr)-1, n//2)
-        # print(ans)
+        print(arr)
         print(sorted(arr)[-n//2], findKthSmallestN(arr, n - n//2), findKthLargest(arr, n - n//2),findKthSmallest(arr, 0, n-1, n - n//2 -1))
     fptr.close()

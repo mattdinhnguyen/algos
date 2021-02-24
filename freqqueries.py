@@ -11,7 +11,7 @@ from bisect import insort
 from typing import List
 from itertools import chain, starmap
 from operator import mul
-
+import json
 # Complete the freqQuery function below.
 ADD = 1
 DEL = 2
@@ -109,7 +109,7 @@ class Solution:
         return "".join(map(lambda t: "".join(t[1]*(-t[0])), freqChrSorted))
     frequencySort = lambda _,s: ''.join(c*x for x,c in Counter(s).most_common()) # better
     frequencySort = lambda _,s: ''.join(starmap(mul, Counter(s).most_common())) # best
-    def scheduleCourseDP(self, courses: List[List[int]]) -> int:
+    def scheduleCourseDP(self, courses: List[List[int]]) -> int: # TLE/MLE
         courses.sort(key = lambda c: (c[1],c[0]))
         endDate = courses[-1][1]
         clen = len(courses)
@@ -119,28 +119,32 @@ class Solution:
                 dp[i][j] = max(dp[i][j-1], 1+dp[i-courses[j-1][0]][j-1]\
                     if courses[j-1][1] >= i >= courses[j-1][0] else dp[i-1][j])
         return dp[endDate][clen]
+    # https://leetcode.com/problems/course-schedule-iii/discuss/104847/Python-Straightforward-with-Explanation
     def scheduleCourseGreedy(self, courses: List[List[int]]) -> int: # best time
-        courses.sort(key = lambda c: (c[1],c[0]))
+        courses.sort(key = lambda c: (c[1],c[0])) 
         daysTakenByCourses = []
         daySpent = 0
-        for dayTaken,closedDate in courses:
+        for dayTaken,closedDate in courses: # take courses with earliest closedDate, shortest dayTaken ASAP
             daySpent += dayTaken
-            heappush(daysTakenByCourses,-dayTaken)
+            heappush(daysTakenByCourses,-dayTaken) # max dayTaken is heap top
             if daySpent > closedDate:
-                daySpent += heappop(daysTakenByCourses)
-
+                daySpent += heappop(daysTakenByCourses) # remove max dayTaken from heap to get more days for later courses
         return len(daysTakenByCourses)
 if __name__ == '__main__':
     sol = Solution()
     # print(sol.topKFrequent([1,1,1,2,2,3],2))
     # print(sol.frequencySort("tree"))
-    tdata = [[[5,5],[4,6],[2,6]],
+    fptr = open(os.path.dirname(__file__) + "/scheduleCourses.ut")
+    td = json.loads(fptr.readline().strip())
+    tdata = [td,[[5,5],[4,6],[2,6]],
     [[100,200],[200,1300],[1000,1250],[2000,3200]],
     [[7,16],[2,3],[3,12],[3,14],[10,19],[10,16],[6,8],[6,11],[3,13],[6,16]]]
     for td in tdata:
-        print(sol.scheduleCourseGreedy(td),sol.scheduleCourseDP(td)) # 2,3,4
-    fptr = open("freqqueries.ut")
-    fptro = open("freqqueries.uto")
+        a,b = sol.scheduleCourseGreedy(td),sol.scheduleCourseDP(td)
+        print(a,b)
+        assert sol.scheduleCourseGreedy(td) == sol.scheduleCourseDP(td)
+    fptr = open(os.path.dirname(__file__) + "/freqqueries.ut")
+    fptro = open(os.path.dirname(__file__) + "/freqqueries.uto")
 
     q = int(fptr.readline().strip())
 

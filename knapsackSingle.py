@@ -30,11 +30,11 @@ class Solution:
         return K[n - 1][capacity], items
    def knapSack(self, weights, values, capacity):
         n = len(weights) # number of items
-        dp = [0]*(capacity+1) # value at capacity i Space(capacity)
-        items = set()
+        dp = [0]*(capacity+1) # value at capacity j Space(capacity)
+        items = set() # weights contribute to dpJnWi > dp[j]
         for i in range(n): # Time(N*capacity) for each item weight, iterate from capacity to this item weight, find the max value including this item
             for j in range(capacity, weights[i]-1, -1): # -1 to include weights[0]
-                dpJnWi = values[i] + dp[j-weights[i]] # value of i + value at capacity j less i weight
+                dpJnWi = values[i] + dp[j-weights[i]] # value of i + value at capacity j less weights[i]
                 if dpJnWi > dp[j]: # before: value at capacity j without i because "for j loop" starting at full capacity
                     dp[j] = dpJnWi # after: including values[i]
                     if sum(items) + weights[i] <= capacity:
@@ -45,9 +45,8 @@ if __name__ == "__main__":
     item_values = [0, 1, 20, 3, 14, 100]
     W = 15 # total weight capacity
     sol = Solution()
-    print("Result: ", sol.knapSack(item_weights,item_values, W))
-
-## Optional: Uncomment to view the 2D table
-# from pandas import *
-# print("K table:")
-# print(DataFrame(K))
+    assert sol.knapSack(item_weights,item_values, W) == (24, {3, 2, 10})
+    vals, weights, cap = [60, 100, 120], [10, 20, 30], 50
+    assert sol.knapSack(weights,vals, cap)[0] == 220
+    vals, weights, cap = [10, 20, 30, 40],[12, 13, 15, 19],10
+    assert sol.knapSack(weights,vals, cap)[0] == 0
